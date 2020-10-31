@@ -1,0 +1,5 @@
+flask library
+	$ pip install flask
+
+pillow library
+	$ pip install pillow
