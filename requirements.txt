@@ -3,3 +3,7 @@ flask library
 
 pillow library
 	$ pip install pillow
+
+possible requete CURL pour envoyer l'image:
+curl -F file="@nom_image.format" -X POST http://127.0.0.1:5000/images
+
