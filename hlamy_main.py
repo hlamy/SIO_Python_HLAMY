@@ -51,13 +51,18 @@ def uploadpic():
 
     # try to open provided file as a picture. If OK, save it, if not, return error
     try:
-        
         with img.open(picture) as new_pic:
             new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
-        
     except:
         return 'Error : file is not a picture'
-    
+
+    # extraction de thumbnail (action synchrone pour le moment)
+    try:
+        pichandler.extractThumbnail(pictureID, new_pic.format)
+    except:
+        return 'Error : could not extract thunbnail'
+
+    # extraction de metadata et sauvegarde en JSON (action synchrone pour le moment)
     try:
         if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID))), metadata_folder):
         
@@ -80,14 +85,10 @@ def metadataaccess(pictureID):
 
 
 # méthode d'envoi de l'image demandée vers le client de l'API (via GET) - façon téléchargement
-@app.route('/images/<picturename>', methods = ['GET'])
+@app.route('/download/<picturename>', methods = ['GET'])
 def pictureaccess(picturename):
     try:
         return send_file(str(pictures_folder / Path(picturename)), as_attachment=True)
     # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
-
-
-
-

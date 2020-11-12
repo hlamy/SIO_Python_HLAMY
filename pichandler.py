@@ -76,13 +76,13 @@ def saveMetadataAsJSON(pictureID, metadata, folder):
     return status
 
 #fonction d'extraction d'un thumbnail depuis l'image originale vers le dossier thumbnails
-def extractThumbnail(picturename, picture_folder = Path('pictures'), thumbnail_folder = Path('thumbnails'), size = (75, 75)):
+def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures'), thumbnail_folder = Path('thumbnails'), size = (75, 75)):
     #ouverture de l'image "picturename", depuis le dossier picture_folder
-    with img.open(picture_folder / Path(picturename)) as picture:
+    with img.open(picture_folder / Path(picturename + '.' + pictureformat)) as picture:
         # passage de l'image en taille thumbnail
         picture.thumbnail(size)
         # sauvegarde de l'image réduite dans le dossier prévu à cette effet
-        picture.save(thumbnail_folder / Path(picturename), "JPEG")
+        picture.save(str(thumbnail_folder / Path(picturename)) + '.jpg', "JPEG")
     return None
 
 
