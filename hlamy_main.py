@@ -15,7 +15,7 @@ texte = pprint.pformat(__name__) + '\n'
 app.config['UPLOAD_FOLDER'] = 'f:/GitHub/SIO_Python_HLAMY/Temp'
 temporary_files_folder = 'f:/GitHub/SIO_Python_HLAMY/Temp'
 pictures_folder = Path('f:/GitHub/SIO_Python_HLAMY/pictures')
-thumbnails_folder = Path('f/GitHub/SIO_Python_HLAMY/thumbnails')
+thumbnails_folder = Path('F:/GitHub/SIO_Python_HLAMY/thumbnails')
 app.config["CLIENT_IMAGES"] = pictures_folder
 metadata_folder = Path('f:/GitHub/SIO_Python_HLAMY/metadata')
 
@@ -60,7 +60,7 @@ def uploadpic():
     try:
         pichandler.extractThumbnail(pictureID, new_pic.format)
     except:
-        return 'Error : could not extract thunbnail'
+        return 'Error : could not extract thumbnail'
 
     # extraction de metadata et sauvegarde en JSON (action synchrone pour le moment)
     try:
@@ -86,9 +86,18 @@ def metadataaccess(pictureID):
 
 # méthode d'envoi de l'image demandée vers le client de l'API (via GET) - façon téléchargement
 @app.route('/download/<picturename>', methods = ['GET'])
-def pictureaccess(picturename):
+def pictureAccess(picturename):
     try:
         return send_file(str(pictures_folder / Path(picturename)), as_attachment=True)
     # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
+    except FileNotFoundError:
+        abort(404)
+
+# méthode d'accès au thumbnail de l'image vers le client de l'API (via GET) - façon téléchargement
+@app.route('/thumbnails/<picturename>', methods = ['GET'])
+def thumbnailAccess(picturename):
+    try:
+        return send_file(str(thumbnails_folder / Path(picturename)), as_attachment=True)
+    # si fichier thumbnail non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
