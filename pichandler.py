@@ -28,8 +28,9 @@ def definePictureID(picture_folder):
     while verifyifIDtaken(pictureID,picture_folder) and i<100:
         pictureID = str(randint(1000000, 9999999))
         i+=1
-    return pictureID
-
+    if i<100:
+        return pictureID
+    
 # fonction d'ouverture et d'extraction des métadonnées d'une image:
 def extractMetadata(picturename):
     try:

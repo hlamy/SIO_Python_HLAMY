@@ -1,7 +1,10 @@
 import pprint
 from random import randint
 from flask import Flask, send_from_directory, request, abort, send_file
+# utilisation de la librairie os pour gérer les chemins d'accès
 import os
+import json
+# utilisation de la librairie PIL pour gérer les images
 from PIL import Image as img
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers
 from pathlib import Path
@@ -17,7 +20,7 @@ temporary_files_folder = 'f:/GitHub/SIO_Python_HLAMY/Temp'
 pictures_folder = Path('f:/GitHub/SIO_Python_HLAMY/pictures')
 thumbnails_folder = Path('F:/GitHub/SIO_Python_HLAMY/thumbnails')
 app.config["CLIENT_IMAGES"] = pictures_folder
-metadata_folder = Path('f:/GitHub/SIO_Python_HLAMY/metadata')
+metadata_folder = Path('F:/GitHub/SIO_Python_HLAMY/metadata')
 
 #page racine de l'API
 @app.route('/')
@@ -73,20 +76,33 @@ def uploadpic():
         abort(500)
 
 
-
 # méthode d'envoi vers le client des métadata de l'image demandée
 @app.route('/images/metadata/<pictureID>', methods = ['GET'])
-def metadataaccess(pictureID):
+def pictureInfoAccess(pictureID):
     try:
-        return send_file(str(pictures_folder / Path(pictureID + '.json')), as_attachment=True)
+        return send_file(str(metadata_folder / Path(pictureID + '.json')), as_attachment=True), 'OK'
     # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
+        abort(404)
+
+# méthode d'envoi vers le client des informations et métadata de l'image demandée
+@app.route('/images/<pictureID>', methods = ['GET'])
+def metadataaccess(pictureID):
+    
+    try:
+        
+        with open(str(metadata_folder / Path(pictureID + '.json')), 'r') as metadata:
+            donnees = str({'"status" : "OK"}\n' + str(metadata.readlines()) + '\n' + 'http://127.0.0.1:5000/thumbnails/' + pictureID + '.jpg\n')
+        return donnees
+
+    # si problème : erreur 404, car cas similaire à une page non trouvée
+    except:
         abort(404)
 
 
 # méthode d'envoi de l'image demandée vers le client de l'API (via GET) - façon téléchargement
 @app.route('/download/<picturename>', methods = ['GET'])
-def pictureAccess(picturename):
+def pictureaccess(picturename):
     try:
         return send_file(str(pictures_folder / Path(picturename)), as_attachment=True)
     # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
@@ -95,7 +111,7 @@ def pictureAccess(picturename):
 
 # méthode d'accès au thumbnail de l'image vers le client de l'API (via GET) - façon téléchargement
 @app.route('/thumbnails/<picturename>', methods = ['GET'])
-def thumbnailAccess(picturename):
+def thumbnailaccess(picturename):
     try:
         return send_file(str(thumbnails_folder / Path(picturename)), as_attachment=True)
     # si fichier thumbnail non trouvé : erreur 404, car cas similaire à une page non trouvée
