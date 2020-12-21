@@ -92,7 +92,7 @@ def metadataaccess(pictureID):
     try:
         
         with open(str(metadata_folder / Path(pictureID + '.json')), 'r') as metadata:
-            donnees = str({'"status" : "OK"}\n' + str(metadata.readlines()) + '\n' + 'http://127.0.0.1:5000/thumbnails/' + pictureID + '.jpg\n')
+            donnees = str('{"status" : "OK"}\n' + str(metadata.readlines()) + '\n' + 'http://127.0.0.1:5000/thumbnails/' + pictureID + '.jpg\n')
         return donnees
 
     # si problème : erreur 404, car cas similaire à une page non trouvée

@@ -7,8 +7,13 @@ from os import walk
 from os.path import isfile, join
 import json
 from random import randint
+from celery import Celery
+
+
+appcelery = Celery('tasks', broker='redis://localhost', backend='redis://localhost')
 
 # fonction de vérification du pictureID, pour vérifier que celui-ci est utilisé ou non:
+@appcelery.task
 def verifyifIDtaken(pictureID,picture_folder):
     result = False
     # liste l'ensemble des fichiers dans le dossier d'images
@@ -22,6 +27,7 @@ def verifyifIDtaken(pictureID,picture_folder):
     return result
 
 # fonction de définition d'un identifiant d'image unique
+@appcelery.task
 def definePictureID(picture_folder):
     pictureID = str(randint(1000000, 9999999))
     i=0
@@ -30,8 +36,9 @@ def definePictureID(picture_folder):
         i+=1
     if i<100:
         return pictureID
-    
+
 # fonction d'ouverture et d'extraction des métadonnées d'une image:
+@appcelery.task
 def extractMetadata(picturename):
     try:
         # Création d'un dictionnaire pour conserver les métadonnées
@@ -62,6 +69,7 @@ def extractMetadata(picturename):
     return metadata
 
 # fonction de sauvegarde des metadata vers un fichier json, dans un dossier donné:
+@appcelery.task
 def saveMetadataAsJSON(pictureID, metadata, folder):
     # la fonction retournera un bouléen en cas de succès (True) ou d'échec (False)
     status = False
@@ -77,6 +85,7 @@ def saveMetadataAsJSON(pictureID, metadata, folder):
     return status
 
 #fonction d'extraction d'un thumbnail depuis l'image originale vers le dossier thumbnails
+@appcelery.task
 def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures'), thumbnail_folder = Path('thumbnails'), size = (75, 75)):
     #ouverture de l'image "picturename", depuis le dossier picture_folder
     with img.open(picture_folder / Path(picturename + '.' + pictureformat)) as picture:
@@ -88,6 +97,7 @@ def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures
 
 
 # fonction de contrôle si le fichier est une image ou autre
+@appcelery.task
 def picture_check(picture):
 
     try:
@@ -99,6 +109,7 @@ def picture_check(picture):
     
 
 # fonction de convertion, dans le format qui semble le plus approprié :
+@appcelery.task
 def convertvalue(value):
     # entiers, décimaux et chaînes de caractères sont possibles. 
     # Retourne None s'il n'est pas possible de convertir en "string" :
@@ -109,9 +120,3 @@ def convertvalue(value):
         except:
             pass
     return None
-
-
-
-# partie de test du code, à retirer après finition 
-
-# extractThumbnail('99999.jpeg', Path('pictures'), Path('thumbnails'))
