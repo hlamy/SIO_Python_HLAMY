@@ -1,12 +1,15 @@
+# importation de fonctions de la librairie "pillow" pour assurer la manipulation des images
 from PIL import Image as img
 from PIL.ExifTags import TAGS
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers
 from pathlib import Path
-# from os import listdir
+# importation de fonction de la librairie "os" pour gérer la recherche dans les fichiers
 from os import walk
 from os.path import isfile, join
+# importation de json pour générer les fichiers de métadonnées
 import json
 from random import randint
+# importation de celery pour paralleliser le travail sur les images
 from celery import Celery
 
 
@@ -96,7 +99,7 @@ def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures
     return None
 
 
-# fonction de contrôle si le fichier est une image ou autre
+# fonction de contrôle, pour vérifier si le fichier est une image ou un autre format
 @appcelery.task
 def picture_check(picture):
 
@@ -108,7 +111,7 @@ def picture_check(picture):
         return False
     
 
-# fonction de convertion, dans le format qui semble le plus approprié :
+# fonction de convertion, dans le format qui semble le plus approprié (pour réinjection dans le json contenant les métadonnées) :
 @appcelery.task
 def convertvalue(value):
     # entiers, décimaux et chaînes de caractères sont possibles. 

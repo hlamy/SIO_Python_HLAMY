@@ -1,8 +1,10 @@
 import pprint
-from random import randint
+#from random import randint
+# importation de flask comme serveur web
 from flask import Flask, send_from_directory, request, abort, send_file
-# utilisation de la librairie os pour gérer les chemins d'accès
+# utilisation de la librairie os pour gérer les chemins d'accès et la navigation dans les fichiers
 import os
+# importation de json pour pouvoir lire les fichiers json contenant les métadonnées
 import json
 # utilisation de la librairie PIL pour gérer les images
 from PIL import Image as img
@@ -85,6 +87,7 @@ def pictureInfoAccess(pictureID):
     except FileNotFoundError:
         abort(404)
 
+
 # méthode d'envoi vers le client des informations et métadata de l'image demandée
 @app.route('/images/<pictureID>', methods = ['GET'])
 def metadataaccess(pictureID):
@@ -108,6 +111,7 @@ def pictureaccess(picturename):
     # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
+
 
 # méthode d'accès au thumbnail de l'image vers le client de l'API (via GET) - façon téléchargement
 @app.route('/thumbnails/<picturename>', methods = ['GET'])
