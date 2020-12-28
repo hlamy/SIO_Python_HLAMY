@@ -1,5 +1,4 @@
 import pprint
-#from random import randint
 # importation de flask comme serveur web
 from flask import Flask, send_from_directory, request, abort, send_file
 # utilisation de la librairie os pour gérer les chemins d'accès et la navigation dans les fichiers
@@ -16,13 +15,13 @@ import pichandler
 app = Flask(__name__)
 texte = pprint.pformat(__name__) + '\n'
 
-# lignes de configuration des dossiers de stockage des images, thumbnails et fichiers temporaires
-app.config['UPLOAD_FOLDER'] = 'f:/GitHub/SIO_Python_HLAMY/Temp'
-temporary_files_folder = 'f:/GitHub/SIO_Python_HLAMY/Temp'
-pictures_folder = Path('f:/GitHub/SIO_Python_HLAMY/pictures')
-thumbnails_folder = Path('F:/GitHub/SIO_Python_HLAMY/thumbnails')
+# lignes de configuration des dossiers de stockage des images, thumbnails et fichiers temporaires - ils sont tous à la racine du dossier du python
+app.config['UPLOAD_FOLDER'] = './temp'
+temporary_files_folder = './temp'
+pictures_folder = Path('./pictures')
+thumbnails_folder = Path('./thumbnails')
 app.config["CLIENT_IMAGES"] = pictures_folder
-metadata_folder = Path('F:/GitHub/SIO_Python_HLAMY/metadata')
+metadata_folder = Path('./metadata')
 
 #page racine de l'API
 @app.route('/')
@@ -37,35 +36,37 @@ def uploadpic():
     
     # obtention d'un identifiant d'image
     try :
-        pictureID = pichandler.definePictureID(pictures_folder)
+        pictureID = pichandler.definePictureID(metadata_folder)
     except:
-        return 'Error : could not provide proper ID'
+        return 'Error : could not provide proper ID', 500
     # try to load the provided file. If not OK, return error
     
     try:
         picture = request.files['file']
     except:
-        return 'Error : upload problem'
+        return 'Error : upload problem', 500
     
     # sauvegarde l'image dans un dossier temporaire et extraction des metadata
     try:
         picture.save(temporary_files_folder / Path(pictureID))
         #pichandler.saveMetadataAsJSON(temporary_files_folder / Path(pictureID), metadata_folder)
     except:
-        return 'Error : metadata extraction problem'
+        return 'Error : metadata extraction problem', 500
 
     # try to open provided file as a picture. If OK, save it, if not, return error
+    
+    if not(pichandler.picture_check(picture, pictureID, pictures_folder)):
+        return 'Error : file is not a picture', 501
+    else:
+        pass
+
+    # extraction de thumbnail
     try:
         with img.open(picture) as new_pic:
             new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
+            pichandler.extractThumbnail(pictureID, new_pic.format)
     except:
-        return 'Error : file is not a picture'
-
-    # extraction de thumbnail (action synchrone pour le moment)
-    try:
-        pichandler.extractThumbnail(pictureID, new_pic.format)
-    except:
-        return 'Error : could not extract thumbnail'
+        return 'Error : could not extract thumbnail', 501
 
     # extraction de metadata et sauvegarde en JSON (action synchrone pour le moment)
     try:
@@ -73,9 +74,9 @@ def uploadpic():
         
             return pictureID
         else:
-            return 'no metadata'
+            return 'no metadata', 404
     except:
-        abort(500)
+        abort(404)
 
 
 # méthode d'envoi vers le client des métadata de l'image demandée

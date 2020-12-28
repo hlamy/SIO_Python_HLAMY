@@ -15,12 +15,12 @@ from celery import Celery
 
 appcelery = Celery('tasks', broker='redis://localhost', backend='redis://localhost')
 
-# fonction de vérification du pictureID, pour vérifier que celui-ci est utilisé ou non:
+# fonction de vérification du pictureID, pour vérifier que celui-ci est utilisé ou non. Retourne 'True' si l'ID est déjà présent dans le dossier des fichiers de métadonnées:
 @appcelery.task
-def verifyifIDtaken(pictureID,picture_folder):
+def verifyifIDtaken(pictureID,metadata_folder):
     result = False
     # liste l'ensemble des fichiers dans le dossier d'images
-    for files in walk(picture_folder):
+    for files in walk(metadata_folder):
         # liste les documents dans chaque dossier trouvé
         for docs in files:
             # vérifie la présence ou non de l'image recherchée
@@ -31,10 +31,10 @@ def verifyifIDtaken(pictureID,picture_folder):
 
 # fonction de définition d'un identifiant d'image unique
 @appcelery.task
-def definePictureID(picture_folder):
+def definePictureID(metadata_folder):
     pictureID = str(randint(1000000, 9999999))
     i=0
-    while verifyifIDtaken(pictureID,picture_folder) and i<100:
+    while verifyifIDtaken(pictureID,metadata_folder) and i<100:
         pictureID = str(randint(1000000, 9999999))
         i+=1
     if i<100:
@@ -101,17 +101,16 @@ def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures
 
 # fonction de contrôle, pour vérifier si le fichier est une image ou un autre format
 @appcelery.task
-def picture_check(picture):
-
+def picture_check(picture, pictureID, pictures_folder):
     try:
-        pic = img.open(picture)
-        pic.close()
-        return True
+        with img.open(picture) as new_pic:
+            new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
+            return True
     except:
         return False
-    
 
-# fonction de convertion, dans le format qui semble le plus approprié (pour réinjection dans le json contenant les métadonnées) :
+
+# fonction de convertion, dans le format qui semble le plus approprié (pour réinjection dans le JSON contenant les métadonnées) :
 @appcelery.task
 def convertvalue(value):
     # entiers, décimaux et chaînes de caractères sont possibles. 

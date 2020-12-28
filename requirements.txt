@@ -1,9 +1,16 @@
-flask library
+flask library :
 	$ pip install flask
 
-pillow library
+pillow library :
 	$ pip install pillow
+
+celery library :
+	$ pip install celery
 
 possible requete CURL pour envoyer l'image:
 curl -F file="@nom_image.format" -X POST http://127.0.0.1:5000/images
 
+curl -F file="@avions.jpg" -X POST http://127.0.0.1:5000/images
+
+les fichiers "texture" ne sont pas pris en compte, ce ne sont pas des formats d'image
+les fichiers "logiciel de retouche" ne sont pas pris en compte, ce ne sont pas des formats d'image
