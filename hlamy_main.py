@@ -16,8 +16,8 @@ app = Flask(__name__)
 texte = pprint.pformat(__name__) + '\n'
 
 # lignes de configuration des dossiers de stockage des images, thumbnails et fichiers temporaires - ils sont tous à la racine du dossier du python
-app.config['UPLOAD_FOLDER'] = './temp'
-temporary_files_folder = './temp'
+temporary_files_folder = Path('./temp')
+app.config['UPLOAD_FOLDER'] = temporary_files_folder
 pictures_folder = Path('./pictures')
 thumbnails_folder = Path('./thumbnails')
 app.config["CLIENT_IMAGES"] = pictures_folder
@@ -26,9 +26,13 @@ metadata_folder = Path('./metadata')
 #page racine de l'API
 @app.route('/')
 def mainpage():
-    greetingmessage = 'Server is up and running'
+    greetingmessage = 'Server is up and running' + '\n'
+    explanationLine1 = "/ + requete GET : racine, indique si le serveur tourne" + '\n'
+    explanationLine2 = "/images/<pictureID> + requete GET : donne les métadata de l'image considérée" + '\n'
+    explanationLine3 = "/images/ + requete POST : permet d'envoyer une image sur le serveur. Les formats TIFF, BMP, PNG, JPG, JPEG, TGA sont supportés." + '\n'
+    explanationLine4 = "/thumbnails/<pictureID> + requete GET : permet de récupérer le thumbnail d'une image." + '\n'
 
-    return greetingmessage
+    return greetingmessage + explanationLine1 + explanationLine2 + explanationLine3 + explanationLine4
 
 # méthode de dépot de l'image sur le serveur (via POST)
 @app.route('/images', methods = ['POST'])

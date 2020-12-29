@@ -8,7 +8,8 @@ from pathlib import Path
 from random import randint
 
 # Ceci est le fichier de tests unitaires des fonctions de pichandler.py.
-# Les fonctions de pichandler.py 'extractThumnail' et 'saveMetadataAsJSON' sont testés via l'API et des scénarios de tests plus complexes dans test_hlamy_main.py
+# Les fonctions de pichandler.py 'extractThumnail' et 'saveMetadataAsJSON' sont testés via l'API et des scénarios de tests plus complexes dans test_hlamy_main.py ;
+# celles-ci ne retourne rien de vraiment testable autre que les fichiers créés. Il me semble donc plus pertinent de les tester dans des scénarios complets.
 
 # définition des dossiers de tests
 temporary_files_folder = './test_temp'
@@ -54,6 +55,7 @@ class TestPicHandler(unittest.TestCase):
         pictureID = '9999999'
         # verifie qu'un fichier image est bien reconnu comme tel (retourne 'True')
         self.assertTrue(pichandler.picture_check(pictures_folder / Path(pictureID + '.tga'), pictureID, pictures_folder))
+        self.assertTrue(pichandler.picture_check(pictures_folder / Path('png.png'), pictureID, pictures_folder))
 
         # verifie qu'un fichier non image est bien reconnu comme tel (retourne 'False')
         self.assertFalse(pichandler.picture_check(pictures_folder / Path(pictureID + '.txt'), pictureID, pictures_folder))
@@ -65,8 +67,6 @@ class TestPicHandler(unittest.TestCase):
         self.assertTrue(pichandler.convertvalue('000.1')==0.1)
         self.assertTrue(pichandler.convertvalue('bobleponge')=='bobleponge')
         self.assertTrue(pichandler.convertvalue('éù%^$')=='éù%^$')
-
-
 
 
 # lancement de la procédure de test
