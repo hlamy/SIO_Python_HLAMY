@@ -24,10 +24,11 @@ def verifyifIDtaken(pictureID,metadata_folder):
         # liste les documents dans chaque dossier trouvé
         for docs in files:
             # vérifie la présence ou non de l'image recherchée
-            if pictureID in docs:
+            if pictureID + '.json' in docs:
               result = True
 
     return result
+
 
 # fonction de définition d'un identifiant d'image unique
 @appcelery.task
@@ -40,20 +41,22 @@ def definePictureID(metadata_folder):
     if i<100:
         return pictureID
 
+
 # fonction d'ouverture et d'extraction des métadonnées d'une image:
 @appcelery.task
-def extractMetadata(picturename):
+def extractMetadata(picturepath, pictureID):
     try:
         # Création d'un dictionnaire pour conserver les métadonnées
         metadata = {}
 
-        with img.open(picturename) as pic:
+        with img.open(picturepath) as pic:
             
             # On récupere certaines données spécifique de l'image grâce aux méthodes de la librairie 'pillow':
-            metadata['PictureId'] = picturename
+            metadata['PictureId'] = pictureID
             metadata['Format'] = pic.format
             metadata['Size'] = pic.size
             metadata['Mode'] = pic.mode
+            metadata['ThumbnailPath'] = 'http://localhost:5000/thumbnails/' + pictureID + '.jpg'
             
             # Avec la librairie ExifTags de pillow, on peut récurérer les métadonnées de type EXIF (métadonnées de photographie) :
             try:
@@ -99,12 +102,12 @@ def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures
     return None
 
 
-# fonction de contrôle, pour vérifier si le fichier est une image ou un autre format
+# fonction de contrôle, pour vérifier si le fichier est une image ou un autre format, puis sauvegarde l'image dans le dossier d'image
 @appcelery.task
 def picture_check(picture, pictureID, pictures_folder):
     try:
         with img.open(picture) as new_pic:
-            new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
+            # new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
             return True
     except:
         return False

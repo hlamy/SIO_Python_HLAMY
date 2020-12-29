@@ -1,13 +1,20 @@
+# importation d'unittest pour executer les tests
 import unittest
+# importation du script à tester
 import pichandler
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers
 from pathlib import Path
+# fonction random.randint pour générer des tests plus aléatoires
 from random import randint
 
-temporary_files_folder = './temp'
-pictures_folder = Path('./pictures')
-thumbnails_folder = Path('./thumbnails')
-metadata_folder = Path('./metadata')
+# Ceci est le fichier de tests unitaires des fonctions de pichandler.py.
+# Les fonctions de pichandler.py 'extractThumnail' et 'saveMetadataAsJSON' sont testés via l'API et des scénarios de tests plus complexes dans test_hlamy_main.py
+
+# définition des dossiers de tests
+temporary_files_folder = './test_temp'
+pictures_folder = Path('./test_pictures')
+thumbnails_folder = Path('./test_thumbnails')
+metadata_folder = Path('./test_metadata')
 
 
 class TestPicHandler(unittest.TestCase):
@@ -20,15 +27,44 @@ class TestPicHandler(unittest.TestCase):
 
     # test de l'extraction de metadonnées (soit un fichier de métadonnée en erreur, soit un fichier avec les données de l'image, si celle-ci existe)
     def test_extractMetadata(self):
-       
-       metadatatest = pichandler.extractMetadata(pichandler.definePictureID(metadata_folder))
+       pictureID = pichandler.definePictureID(metadata_folder)
+       pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
+       metadatatest = pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
      
-       self.assertTrue(('Error' in metadatatest) or ('PictureId') in metadatatest)
+       self.assertTrue(('Error' in metadatatest))
 
-    # test du retour de la vérification d'ID : doit retourner un bouleen "faux", si le dossier de metadata est vide (c'est à dire qu'aucune photo n'est présente), ce qui doit être le cas avant l'utilisation de l'application
+        # verification que le string de métadonnées est bien construit si l'image existe
+       pictureID = str(9999999)
+       pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
+       metadatatest = pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
+     
+       self.assertTrue(('PictureId') in metadatatest)
+
+    # test de la vérification d'ID : doit retourner un bouleen "faux" (testé 25 fois) sauf pour 9999999 (testé une fois), le seul fichier de métadata présent.
     def test_verifyifIDtaken(self):
-        bouleantest = pichandler.verifyifIDtaken(str(randint(1000000,9999999)), metadata_folder)
-        self.assertFalse(bouleantest)
+        for i in range(25):
+            resultat = pichandler.verifyifIDtaken(str(randint(1000000,9999998)), metadata_folder)
+            self.assertFalse(resultat)
+        
+        resultat = pichandler.verifyifIDtaken(str(9999999), metadata_folder)
+        self.assertTrue(resultat)
+
+    # test de la fonction de vérification qu'un fichier est - ou non - une image
+    def test_picture_check(self):
+        pictureID = '9999999'
+        # verifie qu'un fichier image est bien reconnu comme tel (retourne 'True')
+        self.assertTrue(pichandler.picture_check(pictures_folder / Path(pictureID + '.tga'), pictureID, pictures_folder))
+
+        # verifie qu'un fichier non image est bien reconnu comme tel (retourne 'False')
+        self.assertFalse(pichandler.picture_check(pictures_folder / Path(pictureID + '.txt'), pictureID, pictures_folder))
+        self.assertFalse(pichandler.picture_check(pictures_folder / Path(pictureID + '.pdf'), pictureID, pictures_folder))
+
+    # test de la fonction de convertion en string, int ou float (qui sert notamment à la génération correcte de fichiers de métadonnées)
+    def test_convertvalue(self):
+        self.assertTrue(pichandler.convertvalue('00001')==1)
+        self.assertTrue(pichandler.convertvalue('000.1')==0.1)
+        self.assertTrue(pichandler.convertvalue('bobleponge')=='bobleponge')
+        self.assertTrue(pichandler.convertvalue('éù%^$')=='éù%^$')
 
 
 

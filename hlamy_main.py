@@ -26,15 +26,16 @@ metadata_folder = Path('./metadata')
 #page racine de l'API
 @app.route('/')
 def mainpage():
-    picturename = 'pictures/test.jpg'
+    greetingmessage = 'Server is up and running'
 
-    return pichandler.extractMetadata(picturename)
+    return greetingmessage
 
 # méthode de dépot de l'image sur le serveur (via POST)
 @app.route('/images', methods = ['POST'])
 def uploadpic():
     
-    # obtention d'un identifiant d'image
+    # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir le )
+
     try :
         pictureID = pichandler.definePictureID(metadata_folder)
     except:
@@ -46,17 +47,16 @@ def uploadpic():
     except:
         return 'Error : upload problem', 500
     
-    # sauvegarde l'image dans un dossier temporaire et extraction des metadata
+    # sauvegarde l'image dans un dossier temporaire pour effectuer plus tard l'extraction des metadata
     try:
         picture.save(temporary_files_folder / Path(pictureID))
-        #pichandler.saveMetadataAsJSON(temporary_files_folder / Path(pictureID), metadata_folder)
     except:
         return 'Error : metadata extraction problem', 500
 
-    # try to open provided file as a picture. If OK, save it, if not, return error
+    # essai d'ouvrir l'image fourni. Si erreur : retourne 501, fonction pas encore mise en place (les fichiers autre qu'image seront gérés pour le fil rouge)
     
     if not(pichandler.picture_check(picture, pictureID, pictures_folder)):
-        return 'Error : file is not a picture', 501
+        return 'Error : file is not recognised as a picture', 501
     else:
         pass
 
@@ -68,13 +68,13 @@ def uploadpic():
     except:
         return 'Error : could not extract thumbnail', 501
 
-    # extraction de metadata et sauvegarde en JSON (action synchrone pour le moment)
+    # extraction de metadata et sauvegarde en JSON
     try:
-        if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID))), metadata_folder):
+        if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID), metadata_folder):
         
             return pictureID
         else:
-            return 'no metadata', 404
+            return 'No metadata extracted'
     except:
         abort(404)
 
