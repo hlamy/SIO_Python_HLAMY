@@ -44,11 +44,11 @@ class TestBasicHLamy_Main(unittest.TestCase):
     @avec_client
     def testOfErrors(self, client):
         
-        # test de réponse négative si metadonnées absentes (pictureID hors champs, donc absent sinon c'est une erreur)
+        # test de réponse négative si metadonnées absentes (pictureID hors champ, donc absent - sinon c'est une erreur)
         result = client.get("/images/10000000")
         self.assertEqual(result.status_code, 404)
 
-        # test de réponse négative si thumbnail absent (pictureID hors champs, donc absent sinon c'est une erreur)
+        # test de réponse négative si thumbnail absent (pictureID hors champ, donc absent - sinon c'est une erreur)
         result = client.get("/thumbnails/10000000.jpg")
         self.assertEqual(result.status_code, 404)
 
@@ -72,41 +72,44 @@ class TestBasicHLamy_Main(unittest.TestCase):
     @avec_client
     def testScenarioUploadReadDownloadDelete(self, client):
         
-        # ETAPE 1 : envoi d'un fichier image vers le serveur - attente d'une réponse OK - 200
-        testpicturename = 'testpic.jpg'
-        testpicpath= str(testsfile_folder / Path(testpicturename))
-        with open(testpicpath, 'rb') as img:
-            testdata = {'file': (testpicpath,img,'multipart/form-data') }
-        serverresponse = client.post('/images', data=testdata, follow_redirects=True)
+        #Enchainement des tests avec différents formats
+        formatlist = ['bmp', 'jpg', 'png', 'tga', 'tiff']
+        for formattype in formatlist:
+            # ETAPE 1 : envoi d'un fichier image vers le serveur - attente d'une réponse OK - 200
+            testpicturename = 'testpic' + '.' + formattype
+            testpicpath= str(testsfile_folder / Path(testpicturename))
+            with open(testpicpath, 'rb') as img:
+                testdata = {'file': (testpicpath,img,'multipart/form-data') }
+            serverresponse = client.post('/images', data=testdata, follow_redirects=True)
 
-        # on récupère le pictureID donné par le serveur pour en vérifier la validité et le réutiliser par la suite
-        receivedPictureID=int(serverresponse.data)
-        self.assertGreater(receivedPictureID,999999)
-        self.assertLess(receivedPictureID,9999999)
-        # on vérifie qu'on obtient bien un code de réponse "200"
-        self.assertEqual(serverresponse.status_code, 200)
-
-        # ETAPE 2 : récupération des métadonnées issues de l'étape précédente
-        serverresponse = client.get('/images' + '/' + str(receivedPictureID))
-        receivedMetadata = str(serverresponse.data.decode("utf-8"))
-        
-        # verification du code de réponse reçu à 200 et que le fichier de métadonnées contient bien à minima le pictureID du thumbnail
-        self.assertIn('PictureId' and str(receivedPictureID), receivedMetadata)
-        self.assertEqual(serverresponse.status_code, 200)
-
-        # ETAPE 3 : récupération du thumbnail
-        with client.get('/thumbnails' + '/' + str(receivedPictureID) + '.jpg') as serverresponse:
-            # verification que la réponse reçue est bien "200"
+            # on récupère le pictureID donné par le serveur pour en vérifier la validité et le réutiliser par la suite
+            receivedPictureID=int(serverresponse.data)
+            self.assertGreater(receivedPictureID,999999)
+            self.assertLess(receivedPictureID,9999999)
+            # on vérifie qu'on obtient bien un code de réponse "200"
             self.assertEqual(serverresponse.status_code, 200)
-        
-            # verification que le thumbnail reçu à bien une dimension à 75 (hauteur ou largeur)
-            receivedThumbnail = Image.open(io.BytesIO(serverresponse.data))
-            self.assertIn('75', str(receivedThumbnail.size))
-            receivedThumbnail.close()
 
-        # pour terminer le scénario, suppression de l'ensemble des données créées précédement
-        serverresponse = client.delete('/delete' + '/' + str(receivedPictureID))
-        self.assertEqual(serverresponse.status_code, 200)
+            # ETAPE 2 : récupération des métadonnées issues de l'étape précédente
+            serverresponse = client.get('/images' + '/' + str(receivedPictureID))
+            receivedMetadata = str(serverresponse.data.decode("utf-8"))
+            
+            # verification du code de réponse reçu à 200 et que le fichier de métadonnées contient bien à minima le pictureID du thumbnail
+            self.assertIn('PictureId' and str(receivedPictureID), receivedMetadata)
+            self.assertEqual(serverresponse.status_code, 200)
+
+            # ETAPE 3 : récupération du thumbnail
+            with client.get('/thumbnails' + '/' + str(receivedPictureID) + '.jpg') as serverresponse:
+                # verification que la réponse reçue est bien "200"
+                self.assertEqual(serverresponse.status_code, 200)
+            
+                # verification que le thumbnail reçu à bien une dimension à 75 (hauteur ou largeur)
+                receivedThumbnail = Image.open(io.BytesIO(serverresponse.data))
+                self.assertIn('75', str(receivedThumbnail.size))
+                receivedThumbnail.close()
+
+            # pour terminer le scénario, suppression de l'ensemble des données créées précédement
+            serverresponse = client.delete('/delete' + '/' + str(receivedPictureID))
+            self.assertEqual(serverresponse.status_code, 200)
 
 # lancement de la procédure de test
 if __name__ == '__main__':

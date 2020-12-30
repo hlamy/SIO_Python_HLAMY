@@ -15,6 +15,8 @@ import pichandler
 app = Flask(__name__)
 texte = pprint.pformat(__name__) + '\n'
 
+
+
 # lignes de configuration des dossiers de stockage des images, thumbnails et fichiers temporaires - ils sont tous à la racine du dossier du python
 temporary_files_folder = Path('./temp')
 app.config['UPLOAD_FOLDER'] = temporary_files_folder
@@ -22,6 +24,24 @@ pictures_folder = Path('./pictures')
 thumbnails_folder = Path('./thumbnails')
 app.config["CLIENT_IMAGES"] = pictures_folder
 metadata_folder = Path('./metadata')
+
+# creation des dossiers nécessaires au travail de l'application si ceux-ci ne sont pas déjà présent
+try:
+    os.mkdir(temporary_files_folder)
+except:
+    pass
+try:    
+    os.mkdir(pictures_folder)
+except:
+    pass
+try:    
+    os.mkdir(thumbnails_folder)
+except:
+    pass
+try:    
+    os.mkdir(metadata_folder)
+except:
+    pass
 
 #page racine de l'API
 @app.route('/')
@@ -38,8 +58,9 @@ def mainpage():
 @app.route('/images', methods = ['POST'])
 def uploadpic():
     
-    # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir si l'ID est déjà donnée ou non)
 
+
+    # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir si l'ID est déjà donnée ou non)
     try :
         pictureID = pichandler.definePictureID(metadata_folder)
     except:
@@ -73,7 +94,7 @@ def uploadpic():
             pichandler.extractThumbnail(pictureID, new_pic.format)
     except:
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
-        return 'Error : could not extract thumbnail', 501
+        return 'Error : could not extract thumbnail - GIF not supported', 501
       
     # extraction de metadata et sauvegarde en JSON
     try:
