@@ -95,11 +95,10 @@ def uploadpic():
 # sur un dossier spécifique différent du dossier de production
 @app.route('/images/<pictureID>', methods = ['GET'])
 def metadataaccess(pictureID, metadata_folder=metadata_folder):
-    
     try:
         
         with open(str(metadata_folder / Path(pictureID + '.json')), 'r') as metadata:
-            donnees = str(str(metadata.readlines()) + '\n')
+            donnees = str(str(metadata.readlines()))
         return donnees
 
     # si problème : erreur 404, car cas similaire à une page non trouvée
@@ -115,6 +114,7 @@ def thumbnailaccess(pictureID,thumbnails_folder=thumbnails_folder):
     # si fichier thumbnail non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
+
 
 # methode d'effacement des données d'un élément donné
 @app.route('/delete/<pictureID>', methods = ['DELETE'])
