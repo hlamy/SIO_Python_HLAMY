@@ -21,10 +21,11 @@ metadata_folder = Path('./test_metadata')
 class TestPicHandler(unittest.TestCase):
 
 
-    # vérifie la définition d'un ID
+    # vérifie la définition d'un ID correct (testé 25 fois)
     def test_definePictureID(self):
-       self.assertGreater(int(pichandler.definePictureID(metadata_folder)),999999)
-
+        for i in range(25):
+            self.assertGreater(int(pichandler.definePictureID(metadata_folder)),999999)
+            self.assertLess(int(pichandler.definePictureID(metadata_folder)),9999999)
 
     # test de l'extraction de metadonnées (soit un fichier de métadonnée en erreur, soit un fichier avec les données de l'image, si celle-ci existe)
     def test_extractMetadata(self):
@@ -32,14 +33,15 @@ class TestPicHandler(unittest.TestCase):
        pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
        metadatatest = pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
      
-       self.assertTrue(('Error' in metadatatest))
+       self.assertIn('Error', metadatatest)
 
         # verification que le string de métadonnées est bien construit si l'image existe
        pictureID = str(9999999)
        pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
        metadatatest = pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID)
      
-       self.assertTrue(('PictureId') in metadatatest)
+       self.assertIn('PictureId', metadatatest)
+
 
     # test de la vérification d'ID : doit retourner un bouleen "faux" (testé 25 fois) sauf pour 9999999 (testé une fois), le seul fichier de métadata présent.
     def test_verifyifIDtaken(self):
@@ -63,10 +65,10 @@ class TestPicHandler(unittest.TestCase):
 
     # test de la fonction de convertion en string, int ou float (qui sert notamment à la génération correcte de fichiers de métadonnées)
     def test_convertvalue(self):
-        self.assertTrue(pichandler.convertvalue('00001')==1)
-        self.assertTrue(pichandler.convertvalue('000.1')==0.1)
-        self.assertTrue(pichandler.convertvalue('bobleponge')=='bobleponge')
-        self.assertTrue(pichandler.convertvalue('éù%^$')=='éù%^$')
+        self.assertEqual(pichandler.convertvalue('00001'), 1)
+        self.assertEqual(pichandler.convertvalue('000.1'), 0.1)
+        self.assertEqual(pichandler.convertvalue('bobleponge'), 'bobleponge')
+        self.assertEqual(pichandler.convertvalue('éù%^$'), 'éù%^$')
 
 
 # lancement de la procédure de test

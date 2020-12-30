@@ -27,10 +27,10 @@ metadata_folder = Path('./metadata')
 @app.route('/')
 def mainpage():
     greetingmessage = 'Server is up and running' + '\n'
-    explanationLine1 = "/ + requete GET : racine, indique si le serveur tourne" + '\n'
-    explanationLine2 = "/images/<pictureID> + requete GET : donne les métadata de l'image considérée" + '\n'
-    explanationLine3 = "/images/ + requete POST : permet d'envoyer une image sur le serveur. Les formats TIFF, BMP, PNG, JPG, JPEG, TGA sont supportés." + '\n'
-    explanationLine4 = "/thumbnails/<pictureID> + requete GET : permet de récupérer le thumbnail d'une image." + '\n'
+    explanationLine1 = "/ + GET : to check if the server is alive and get API instructions" + '\n'
+    explanationLine2 = "/images/ + POST : to send picture to the server. TIFF, BMP, PNG, JPG, JPEG and TGA are supported." + '\n'
+    explanationLine3 = "/images/<pictureID> + GET : to get the picture metadata" + '\n'
+    explanationLine4 = "/thumbnails/<pictureID> + GET : to get back the picture as a thumbnail." + '\n'
 
     return greetingmessage + explanationLine1 + explanationLine2 + explanationLine3 + explanationLine4
 
@@ -38,7 +38,7 @@ def mainpage():
 @app.route('/images', methods = ['POST'])
 def uploadpic():
     
-    # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir le )
+    # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir si l'ID est déjà donnée ou non)
 
     try :
         pictureID = pichandler.definePictureID(metadata_folder)
@@ -76,31 +76,33 @@ def uploadpic():
     try:
         if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID), metadata_folder):
         
-            return pictureID
+            return pictureID, 200
         else:
-            return 'No metadata extracted'
+            return 'No metadata extracted', 501
     except:
         abort(404)
 
 
 # méthode d'envoi vers le client des métadata de l'image demandée
-@app.route('/images/metadata/<pictureID>', methods = ['GET'])
-def pictureInfoAccess(pictureID):
-    try:
-        return send_file(str(metadata_folder / Path(pictureID + '.json')), as_attachment=True), 'OK'
-    # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
-    except FileNotFoundError:
-        abort(404)
+#@app.route('/images/metadata/<pictureID>', methods = ['GET'])
+#def pictureInfoAccess(pictureID):
+#    try:
+#        return send_file(str(metadata_folder / Path(pictureID + '.json')), as_attachment=True), 'OK'
+#    # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
+#    except FileNotFoundError:
+#        abort(404)
 
 
-# méthode d'envoi vers le client des informations et métadata de l'image demandée
+# méthode d'envoi vers le client des informations et métadata de l'image demandée. 
+# Le dossier des métadonnées est en parametre pour permettre d'effectuer les tests 
+# sur un dossier spécifique différent du dossier de production
 @app.route('/images/<pictureID>', methods = ['GET'])
-def metadataaccess(pictureID):
+def metadataaccess(pictureID, metadata_folder=metadata_folder):
     
     try:
         
         with open(str(metadata_folder / Path(pictureID + '.json')), 'r') as metadata:
-            donnees = str('{"status" : "OK"}\n' + str(metadata.readlines()) + '\n' + 'http://127.0.0.1:5000/thumbnails/' + pictureID + '.jpg\n')
+            donnees = str(str(metadata.readlines()) + '\n')
         return donnees
 
     # si problème : erreur 404, car cas similaire à une page non trouvée
@@ -109,20 +111,20 @@ def metadataaccess(pictureID):
 
 
 # méthode d'envoi de l'image demandée vers le client de l'API (via GET) - façon téléchargement
-@app.route('/download/<picturename>', methods = ['GET'])
-def pictureaccess(picturename):
-    try:
-        return send_file(str(pictures_folder / Path(picturename)), as_attachment=True)
-    # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
-    except FileNotFoundError:
-        abort(404)
+#@app.route('/download/<picturename>', methods = ['GET'])
+#def pictureaccess(picturename):
+#    try:
+#        return send_file(str(pictures_folder / Path(picturename)), as_attachment=True)
+#    # si fichier non trouvé : erreur 404, car cas similaire à une page non trouvée
+#    except FileNotFoundError:
+#        abort(404)
 
 
 # méthode d'accès au thumbnail de l'image vers le client de l'API (via GET) - façon téléchargement
-@app.route('/thumbnails/<picturename>', methods = ['GET'])
-def thumbnailaccess(picturename):
+@app.route('/thumbnails/<pictureID>', methods = ['GET'])
+def thumbnailaccess(pictureID,thumbnails_folder=thumbnails_folder):
     try:
-        return send_file(str(thumbnails_folder / Path(picturename)), as_attachment=True)
+        return send_file(str(thumbnails_folder / Path(pictureID)), as_attachment=True)
     # si fichier thumbnail non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
