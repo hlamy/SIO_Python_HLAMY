@@ -12,10 +12,10 @@ from random import randint
 # celles-ci ne retourne rien de vraiment testable autre que les fichiers créés. Il me semble donc plus pertinent de les tester dans des scénarios complets.
 
 # définition des dossiers de tests
-temporary_files_folder = './test_temp'
-pictures_folder = Path('./test_pictures')
-thumbnails_folder = Path('./test_thumbnails')
-metadata_folder = Path('./test_metadata')
+temporary_files_folder = './tests/test_temp'
+pictures_folder = Path('./tests/test_pictures')
+thumbnails_folder = Path('./tests/test_thumbnails')
+metadata_folder = Path('./tests/test_metadata')
 
 
 class TestPicHandler(unittest.TestCase):

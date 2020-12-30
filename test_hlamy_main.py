@@ -6,13 +6,16 @@ import hlamy_main as appli
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers
 from pathlib import Path
 import io
+import json
+from PIL import Image
 # Ceci est le fichier de test de l'ensemble des fonctions de hlamy_main.py. Il contient des scénarios de tests qui permettent de tester l'ensemble des fonctionnalités et des API de l'application
 
 # définition des dossiers de tests
-temporary_files_folder = './test_temp'
-pictures_folder = Path('./test_pictures')
-thumbnails_folder = Path('./test_thumbnails')
-metadata_folder = Path('./test_metadata')
+temporary_files_folder = './tests/test_temp'
+pictures_folder = Path('./tests/test_pictures')
+thumbnails_folder = Path('./tests/test_thumbnails')
+metadata_folder = Path('./tests/test_metadata')
+testsfile_folder = Path('./tests/test_files')
 
 # definition du décorateur pour tester la partie application
 def avec_client(f):
@@ -37,9 +40,9 @@ class TestBasicHLamy_Main(unittest.TestCase):
         resultatAttendu = '"PictureId": "9999999"'
         self.assertIn(resultatAttendu ,  appli.metadataaccess('9999999',metadata_folder))
 
-    # test de scénario complet, d'envoi d'une photo, de lecture de ses métadonnées puis de récupération du thumbnail
+    # test de remontée d'erreur, en cas d'envoi de mauvais fichiers par exemple.
     @avec_client
-    def testScenarioUploadReadDownload(self, client):
+    def testOfErrors(self, client):
         
         # test de réponse négative si metadonnées absentes (pictureID hors champs, donc absent sinon c'est une erreur)
         result = client.get("/images/10000000")
@@ -49,21 +52,61 @@ class TestBasicHLamy_Main(unittest.TestCase):
         result = client.get("/thumbnails/10000000.jpg")
         self.assertEqual(result.status_code, 404)
 
-        # test d'envoi d'un fichier non image vers le serveur via l'API /images + POST
+        # test d'envoi d'un fichier non image vers le serveur via l'API /images + POST - réponse erreur 501 attendue (gestion des fichiers non image non implémentée)
         fakefilename = 'testfile.txt'
         fakefile = b'bourrage'
         testfile = (io.BytesIO(fakefile), fakefilename)
+        testdata = {'file': testfile}   
+        serverresponse = client.post('/images', data=testdata, follow_redirects=True, content_type='multipart/form-data')
+        self.assertEqual(serverresponse.status_code, 501)
+        
+        # verification qu'un fichier non image, même avec une bonne extension, remonte bien une erreur 501 (gestion des fichiers non image non implémentée)
+        fakefilename = 'testbrokenpic.jpg'
+        fakefile = b'Ceci n"est pas une photo'
+        testfile = (io.BytesIO(fakefile), fakefilename)
         testdata = {'file': testfile}
-            
         serverresponse = client.post('/images', data=testdata, follow_redirects=True, content_type='multipart/form-data')
         self.assertEqual(serverresponse.status_code, 501)
 
+    # test de scénario complet, d'envoi d'une photo, de lecture de ses métadonnées puis de récupération du thumbnail, pour enfin effacer les données créées. Les 4 API sont testées.
+    @avec_client
+    def testScenarioUploadReadDownloadDelete(self, client):
         
+        # ETAPE 1 : envoi d'un fichier image vers le serveur - attente d'une réponse OK - 200
+        testpicturename = 'testpic.jpg'
+        testpicpath= str(testsfile_folder / Path(testpicturename))
+        with open(testpicpath, 'rb') as img:
+            testdata = {'file': (testpicpath,img,'multipart/form-data') }
+        serverresponse = client.post('/images', data=testdata, follow_redirects=True)
 
+        # on récupère le pictureID donné par le serveur pour en vérifier la validité et le réutiliser par la suite
+        receivedPictureID=int(serverresponse.data)
+        self.assertGreater(receivedPictureID,999999)
+        self.assertLess(receivedPictureID,9999999)
+        # on vérifie qu'on obtient bien un code de réponse "200"
+        self.assertEqual(serverresponse.status_code, 200)
 
-    #def test_thumbnailaccess(self):
-    #    pictureID = '9999999'
-    #    thumbnailPic = appli.thumbnailaccess(pictureID,thumbnails_folder)
+        # ETAPE 2 : récupération des métadonnées issues de l'étape précédente
+        serverresponse = client.get('/images' + '/' + str(receivedPictureID))
+        receivedMetadata = str(serverresponse.data.decode("utf-8"))
+        
+        # verification du code de réponse reçu à 200 et que le fichier de métadonnées contient bien à minima le pictureID du thumbnail
+        self.assertIn('PictureId' and str(receivedPictureID), receivedMetadata)
+        self.assertEqual(serverresponse.status_code, 200)
+
+        # ETAPE 3 : récupération du thumbnail
+        with client.get('/thumbnails' + '/' + str(receivedPictureID) + '.jpg') as serverresponse:
+            # verification que la réponse reçue est bien "200"
+            self.assertEqual(serverresponse.status_code, 200)
+        
+            # verification que le thumbnail reçu à bien une dimension à 75 (hauteur ou largeur)
+            receivedThumbnail = Image.open(io.BytesIO(serverresponse.data))
+            self.assertIn('75', str(receivedThumbnail.size))
+            receivedThumbnail.close()
+
+        # pour terminer le scénario, suppression de l'ensemble des données créées précédement
+        serverresponse = client.delete('/delete' + '/' + str(receivedPictureID))
+        self.assertEqual(serverresponse.status_code, 200)
 
 # lancement de la procédure de test
 if __name__ == '__main__':

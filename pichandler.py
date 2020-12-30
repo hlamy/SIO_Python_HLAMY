@@ -3,8 +3,8 @@ from PIL import Image as img
 from PIL.ExifTags import TAGS
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers
 from pathlib import Path
-# importation de fonction de la librairie "os" pour gérer la recherche dans les fichiers
-from os import walk
+# importation de fonctions de la librairie "os" pour gérer la recherche dans les fichiers
+from os import walk, remove
 from os.path import isfile, join
 # importation de json pour générer les fichiers de métadonnées
 import json
@@ -125,3 +125,11 @@ def convertvalue(value):
         except:
             pass
     return None
+
+# fonction de nettoyage des fichiers temporaires
+def remove_temp_data(temporary_files_folder, pictureID):
+    try:
+        remove(str(temporary_files_folder / Path(pictureID)))
+    except:
+        pass
+
