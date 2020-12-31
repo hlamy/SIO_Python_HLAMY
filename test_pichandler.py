@@ -1,3 +1,4 @@
+# coding=UTF-8
 # importation d'unittest pour executer les tests
 import unittest
 # importation du script à tester

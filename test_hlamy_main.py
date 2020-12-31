@@ -1,6 +1,6 @@
+# coding=UTF-8
 # importation d'unittest pour executer les tests
 import unittest
-from unittest import mock
 # importation du script à tester sous le nom "appli" pour pouvoir modifier plus tard le nom du fichier principal
 import hlamy_main as appli
 # utilisation de la librairie 'Path' pour assurer une bonne gestion des chemins de fichiers

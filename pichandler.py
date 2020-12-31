@@ -1,3 +1,4 @@
+# coding=UTF-8
 # importation de fonctions de la librairie "pillow" pour assurer la manipulation des images
 from PIL import Image as img
 from PIL.ExifTags import TAGS

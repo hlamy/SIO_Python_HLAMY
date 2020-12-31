@@ -1,3 +1,4 @@
+# coding=UTF-8
 import pprint
 # importation de flask comme serveur web
 from flask import Flask, send_from_directory, request, abort, send_file
@@ -13,7 +14,8 @@ from pathlib import Path
 import pichandler
 
 app = Flask(__name__)
-texte = pprint.pformat(__name__) + '\n'
+### LIGNE SUIVANTE A SUPPRIMER PROBABLEMENT
+# texte = pprint.pformat(__name__) + '\n'
 
 
 
@@ -58,8 +60,6 @@ def mainpage():
 @app.route('/images', methods = ['POST'])
 def uploadpic():
     
-
-
     # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir si l'ID est déjà donnée ou non)
     try :
         pictureID = pichandler.definePictureID(metadata_folder)
@@ -80,7 +80,7 @@ def uploadpic():
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : metadata extraction problem', 500
 
-    # essai d'ouvrir l'image fourni. Si erreur : retourne 501, fonction pas encore mise en place (les fichiers autre qu'image seront gérés pour le fil rouge)
+    # essai d'ouvrir l'image fourni. Si erreur : retourne 501, fonction pas encore mise en place (les fichiers autres qu'image seront gérés pour le fil rouge)
     if not(pichandler.picture_check(picture, pictureID, pictures_folder)):
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : file is not recognised as a picture', 501

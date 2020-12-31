@@ -1,3 +1,4 @@
+# coding=UTF-8
 # importation de l'API
 import hlamy_main
 
