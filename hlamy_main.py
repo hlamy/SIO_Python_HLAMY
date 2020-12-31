@@ -65,8 +65,8 @@ def uploadpic():
         pictureID = pichandler.definePictureID(metadata_folder)
     except:
         return 'Error : could not provide proper ID', 500
-    # try to load the provided file. If not OK, return error
-    
+
+    # essai de chargement du fichier fourni par le client. Si NOK, retour d'une erreur
     try:
         picture = request.files['file']
     except:

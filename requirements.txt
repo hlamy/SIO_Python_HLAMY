@@ -1,36 +1,6 @@
-# python : python 3.7
-
-# flask library 1.1.2 :
-	$ pip install flask
-
-# pillow library 8.0.1:
-	$ pip install pillow
-
-# celery library 5.0.5:
-	$ pip install celery
-
-# non utilisé pour le moment, ligne probablement à supprimer
-installation pytest :
-	$ pip install pytest
-
-# possible requete CURL pour envoyer l'image:
-curl -F file="@nom_image.format" -X POST http://127.0.0.1:5000/images
+flask == 1.1.2 
+pillow == 8.0.1
+celery == 5.0.5
 
 
-# possible requete CURL pour récupérer les métadonnées de l'image:
-curl http://127.0.0.1:5000/images/<pictureID>
-
-# possible requete CURL pour récupérer le thumbnail de l'image, sauvegardé dans le dossier courant:
-curl --output <pictureID>.jpg http://127.0.0.1:5000/thumbnails/<pictureID>.jpg
-
-
-# Les API :
-/ + requete GET : racine, indique si le serveur tourne
-/images/<pictureID> + requete GET : donne les métadata de l'image considérée
-/images/ + requete POST : permet d'envoyer une image sur le serveur. Les formats TIFF, BMP, PNG, JPG, JPEG, TGA sont supportés.
-/thumbnails/<pictureID> + requete GET : permet de récupérer le thumbnail d'une image
-
-# limitations :
-les fichiers "texture" ne sont pas pris en compte, ce ne sont pas des formats d'image
-les fichiers "logiciel de retouche" ne sont pas pris en compte, ce ne sont pas des formats d'image
 
