@@ -108,7 +108,7 @@ def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures
 def picture_check(picture, pictureID, pictures_folder):
     try:
         with img.open(picture) as new_pic:
-            # new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
+            new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
             return True
     except:
         return False

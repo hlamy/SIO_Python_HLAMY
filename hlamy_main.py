@@ -77,11 +77,13 @@ def uploadpic():
     try:
         picture.save(temporary_files_folder / Path(pictureID))
     except:
+        picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : metadata extraction problem', 500
 
     # essai d'ouvrir l'image fourni. Si erreur : retourne 501, fonction pas encore mise en place (les fichiers autres qu'image seront gérés pour le fil rouge)
     if not(pichandler.picture_check(picture, pictureID, pictures_folder)):
+        picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : file is not recognised as a picture', 501
     else:
@@ -89,26 +91,32 @@ def uploadpic():
 
     # extraction de thumbnail
     try:
-        with img.open(picture) as new_pic:
+        
+        with img.open(str(temporary_files_folder / Path(pictureID)), 'r') as new_pic:
+            
             new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
+            
             pichandler.extractThumbnail(pictureID, new_pic.format)
     except:
+        picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : could not extract thumbnail - GIF not supported', 501
-      
+
     # extraction de metadata et sauvegarde en JSON
     try:
         if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID), metadata_folder):
             pichandler.remove_temp_data(temporary_files_folder, pictureID)
+            picture.close()
             return pictureID, 200
         else:
+            picture.close()
             pichandler.remove_temp_data(temporary_files_folder, pictureID)
             return 'No metadata extracted', 501
         
     except:
+        picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         abort(404)
-
 
 
 # méthode d'envoi vers le client des informations et métadata de l'image demandée. 
@@ -132,6 +140,7 @@ def metadataaccess(pictureID, metadata_folder=metadata_folder):
 def thumbnailaccess(pictureID,thumbnails_folder=thumbnails_folder):
     try:
         return send_file(str(thumbnails_folder / Path(pictureID)), as_attachment=True)
+
     # si fichier thumbnail non trouvé : erreur 404, car cas similaire à une page non trouvée
     except FileNotFoundError:
         abort(404)
