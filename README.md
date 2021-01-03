@@ -7,10 +7,8 @@ Elle permet de générer un thumbnail et d'extraire des métadonnées à partir d'une
 
 #### Installation ####
 
+Python 3.8, puis les librairies flask, pillow, celery et pathlib doivent en premier lieu être installées :
 
-
-
-#### Requirements : ####
 # python : python 3.8
 
 # flask library, 1.1.2 :
@@ -24,6 +22,16 @@ installation via $ pip install celery
 
 # pathlib library, 1.0.1
 installation via $ pip install pathlib
+
+Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi par l'utilisateur pour faire fonctionner l'application. Les fichiers "launcher.py", "hlamy_main.py", et "pichandler.py" sont nécessaires à minima pour faire fonctionner l'application, les fichiers restants sont eux indispensables pour réaliser les tests de fonctionnement.
+
+### Mise en route de l'application ###
+
+L'application peut être lancée via l'execution du script "laucher.py". Aucune autre action n'est nécessaire, mais l'utilisateur doit avoir les droits suffisants pour que le script puisse executer/lire et écrire dans son dossier courant.
+
+Ce script lancera un serveur flask accessible en local sur le port 5000, c'est à dire sur http://localhost:5000/. 
+
+Le bon accès a la page racine http://localhost:5000/ confirme 
 
 #### Les contrats API : ####
 
