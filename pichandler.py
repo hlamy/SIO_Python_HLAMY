@@ -36,10 +36,10 @@ def verifyifIDtaken(pictureID, metadata_folder):
 def definePictureID(metadata_folder):
     pictureID = str(randint(1000000, 9999999))
     i = 0
-    while verifyifIDtaken(pictureID, metadata_folder) and i < 100:
+    while verifyifIDtaken(pictureID, metadata_folder) and i < 1000:
         pictureID = str(randint(1000000, 9999999))
         i += 1
-    if i < 100:
+    if i < 1000:
         return pictureID
 
 
