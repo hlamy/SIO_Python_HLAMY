@@ -14,10 +14,6 @@ from pathlib import Path
 import pichandler
 
 app = Flask(__name__)
-### LIGNE SUIVANTE A SUPPRIMER PROBABLEMENT
-# texte = pprint.pformat(__name__) + '\n'
-
-
 
 # lignes de configuration des dossiers de stockage des images, thumbnails et fichiers temporaires - ils sont tous à la racine du dossier du python
 temporary_files_folder = Path('./temp')

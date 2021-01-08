@@ -7,7 +7,7 @@ Elle permet de générer un thumbnail et d'extraire des métadonnées à partir d'une
 
 #### Installation ####
 
-Python 3.8, puis les librairies flask, pillow, celery et pathlib doivent en premier lieu être installées :
+Python 3.8, puis les librairies flask, pillow, celery et pathlib doivent en premier lieu être installées.
 
 # python : python 3.8
 
@@ -23,7 +23,13 @@ installation via $ pip install celery
 # pathlib library, 1.0.1
 installation via $ pip install pathlib
 
-Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi par l'utilisateur pour faire fonctionner l'application. Les fichiers "launcher.py", "hlamy_main.py", et "pichandler.py" sont nécessaires à minima pour faire fonctionner l'application, les fichiers restants sont eux indispensables pour réaliser les tests de fonctionnement.
+Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi par l'utilisateur pour faire fonctionner l'application. En pratique, les fichiers "launcher.py", "hlamy_main.py", et "pichandler.py" sont nécessaires à minima pour faire fonctionner l'application. 
+
+Le lancement de celle-ci verra la création, s'il n'existent pas déjà, des dossiers /metadata, /pictures, /temp et /thumbnail. Ceux-ci contiendront les fichiers nécessaires à l'application.
+
+### Tests ####
+
+Les fichiers restants sont eux indispensables pour réaliser les tests de fonctionnement : test_pichandler.py réalise les tests sur les fonctions de pichandler.py pendant que test_hlamy_main teste lui l'application web. Le dossier tests et ses sous-dossiers contiennent des
 
 ### Mise en route de l'application ###
 
