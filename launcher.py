@@ -3,4 +3,4 @@
 import hlamy_main
 
 # lancement du serveur flask et de l'application :
-hlamy_main.app.run(host= '0.0.0.0')
+hlamy_main.app.run(host='0.0.0.0')

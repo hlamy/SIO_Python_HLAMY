@@ -28,20 +28,21 @@ try:
     os.mkdir(temporary_files_folder)
 except:
     pass
-try:    
+try:
     os.mkdir(pictures_folder)
 except:
     pass
-try:    
+try:
     os.mkdir(thumbnails_folder)
 except:
     pass
-try:    
+try:
     os.mkdir(metadata_folder)
 except:
     pass
 
-#page racine de l'API
+
+# page racine de l'API
 @app.route('/')
 def mainpage():
     greetingmessage = 'Server is up and running' + '\n'
@@ -52,12 +53,12 @@ def mainpage():
     explanationLine5 = "/delete/<pictureID> + DELETE : to delete all data concerning the given pictureID"
     return greetingmessage + explanationLine1 + explanationLine2 + explanationLine3 + explanationLine4 + explanationLine5
 
+
 # méthode de dépot de l'image sur le serveur (via POST)
-@app.route('/images', methods = ['POST'])
+@app.route('/images', methods=['POST'])
 def uploadpic():
-    
     # obtention d'un identifiant d'image (le dossier des métadonnées est fourni pour définir si l'ID est déjà donnée ou non)
-    try :
+    try:
         pictureID = pichandler.definePictureID(metadata_folder)
     except:
         return 'Error : could not provide proper ID', 500
@@ -68,7 +69,7 @@ def uploadpic():
     except:
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : upload problem', 500
-    
+
     # sauvegarde l'image dans un dossier temporaire pour effectuer plus tard l'extraction des metadata
     try:
         picture.save(temporary_files_folder / Path(pictureID))
@@ -78,7 +79,7 @@ def uploadpic():
         return 'Error : metadata extraction problem', 500
 
     # essai d'ouvrir l'image fourni. Si erreur : retourne 501, fonction pas encore mise en place (les fichiers autres qu'image seront gérés pour le fil rouge)
-    if not(pichandler.picture_check(picture, pictureID, pictures_folder)):
+    if not (pichandler.picture_check(picture, pictureID, pictures_folder)):
         picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
         return 'Error : file is not recognised as a picture', 501
@@ -87,11 +88,11 @@ def uploadpic():
 
     # extraction de thumbnail
     try:
-        
+
         with img.open(str(temporary_files_folder / Path(pictureID)), 'r') as new_pic:
-            
+
             new_pic.save(str(pictures_folder / Path(pictureID + '.' + new_pic.format)))
-            
+
             pichandler.extractThumbnail(pictureID, new_pic.format)
     except:
         picture.close()
@@ -100,7 +101,9 @@ def uploadpic():
 
     # extraction de metadata et sauvegarde en JSON
     try:
-        if pichandler.saveMetadataAsJSON(pictureID, pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),pictureID), metadata_folder):
+        if pichandler.saveMetadataAsJSON(pictureID,
+                                         pichandler.extractMetadata(str(temporary_files_folder / Path(pictureID)),
+                                                                    pictureID), metadata_folder):
             pichandler.remove_temp_data(temporary_files_folder, pictureID)
             picture.close()
             return pictureID, 200
@@ -108,7 +111,7 @@ def uploadpic():
             picture.close()
             pichandler.remove_temp_data(temporary_files_folder, pictureID)
             return 'No metadata extracted', 501
-        
+
     except:
         picture.close()
         pichandler.remove_temp_data(temporary_files_folder, pictureID)
@@ -118,10 +121,10 @@ def uploadpic():
 # méthode d'envoi vers le client des informations et métadata de l'image demandée. 
 # Le dossier des métadonnées est en parametre pour permettre d'effectuer les tests 
 # sur un dossier spécifique différent du dossier de production
-@app.route('/images/<pictureID>', methods = ['GET'])
+@app.route('/images/<pictureID>', methods=['GET'])
 def metadataaccess(pictureID, metadata_folder=metadata_folder):
     try:
-        
+
         with open(str(metadata_folder / Path(pictureID + '.json')), 'r') as metadata:
             donnees = str(str(metadata.readlines()))
         return donnees
@@ -132,8 +135,8 @@ def metadataaccess(pictureID, metadata_folder=metadata_folder):
 
 
 # méthode d'accès au thumbnail de l'image vers le client de l'API (via GET) - façon téléchargement
-@app.route('/thumbnails/<pictureID>', methods = ['GET'])
-def thumbnailaccess(pictureID,thumbnails_folder=thumbnails_folder):
+@app.route('/thumbnails/<pictureID>', methods=['GET'])
+def thumbnailaccess(pictureID, thumbnails_folder=thumbnails_folder):
     try:
         return send_file(str(thumbnails_folder / Path(pictureID)), as_attachment=True)
 
@@ -143,23 +146,23 @@ def thumbnailaccess(pictureID,thumbnails_folder=thumbnails_folder):
 
 
 # methode d'effacement des données d'un élément donné
-@app.route('/delete/<pictureID>', methods = ['DELETE'])
+@app.route('/delete/<pictureID>', methods=['DELETE'])
 def deletedata(pictureID):
     message = 'Delete log :\n'
-    try :
-               
+    try:
+
         try:
             os.remove(str(temporary_files_folder / Path(pictureID)))
             message += 'temp file deleted\n'
         except:
             pass
-        
+
         try:
             os.remove(str(thumbnails_folder / Path(pictureID + '.jpg')))
             message += 'thumbnail deleted\n'
         except:
             pass
-        
+
         try:
             with open(str(metadata_folder / Path(pictureID + '.json'))) as metadata:
                 picformat = json.load(metadata)['Format']
@@ -167,13 +170,13 @@ def deletedata(pictureID):
             message += 'picture deleted\n'
         except:
             pass
-        
+
         try:
             os.remove(str(metadata_folder / Path(pictureID + '.json')))
             message += 'metadata deleted\n'
         except:
             pass
-        
+
         return message + 'Object data deleted', 200
-    except :
+    except:
         return message, 404

@@ -13,12 +13,12 @@ from random import randint
 # importation de celery pour paralleliser le travail sur les images
 from celery import Celery
 
-
 appcelery = Celery('tasks', broker='redis://localhost', backend='redis://localhost')
+
 
 # fonction de vérification du pictureID, pour vérifier que celui-ci est utilisé ou non. Retourne 'True' si l'ID est déjà présent dans le dossier des fichiers de métadonnées:
 @appcelery.task
-def verifyifIDtaken(pictureID,metadata_folder):
+def verifyifIDtaken(pictureID, metadata_folder):
     result = False
     # liste l'ensemble des fichiers dans le dossier d'images
     for files in walk(metadata_folder):
@@ -26,7 +26,7 @@ def verifyifIDtaken(pictureID,metadata_folder):
         for docs in files:
             # vérifie la présence ou non de l'image recherchée
             if pictureID + '.json' in docs:
-              result = True
+                result = True
 
     return result
 
@@ -35,11 +35,11 @@ def verifyifIDtaken(pictureID,metadata_folder):
 @appcelery.task
 def definePictureID(metadata_folder):
     pictureID = str(randint(1000000, 9999999))
-    i=0
-    while verifyifIDtaken(pictureID,metadata_folder) and i<100:
+    i = 0
+    while verifyifIDtaken(pictureID, metadata_folder) and i < 100:
         pictureID = str(randint(1000000, 9999999))
-        i+=1
-    if i<100:
+        i += 1
+    if i < 100:
         return pictureID
 
 
@@ -51,14 +51,14 @@ def extractMetadata(picturepath, pictureID):
         metadata = {}
 
         with img.open(picturepath) as pic:
-            
+
             # On récupere certaines données spécifique de l'image grâce aux méthodes de la librairie 'pillow':
             metadata['PictureId'] = pictureID
             metadata['Format'] = pic.format
             metadata['Size'] = pic.size
             metadata['Mode'] = pic.mode
             metadata['ThumbnailPath'] = 'http://localhost:5000/thumbnails/' + pictureID + '.jpg'
-            
+
             # Avec la librairie ExifTags de pillow, on peut récurérer les métadonnées de type EXIF (métadonnées de photographie) :
             try:
                 metadata['EXIF'] = True
@@ -66,14 +66,15 @@ def extractMetadata(picturepath, pictureID):
                     metadata[str(tag)] = convertvalue(valeur)
 
             except AttributeError:
-                #Une métadonnée pour signifier que les métadonnées de type photographique EXIF n'ont pu être récupérées
+                # Une métadonnée pour signifier que les métadonnées de type photographique EXIF n'ont pu être récupérées
                 metadata['EXIF'] = False
-        
+
     # En cas d'erreur en entrée/sortie (impossible d'ouvrir l'image), le système retourne une erreur dans le dictionnaire de métadonnée :
     except IOError:
         metadata['Error'] = 'Erreur Ouverture Image'
-    
+
     return metadata
+
 
 # fonction de sauvegarde des metadata vers un fichier json, dans un dossier donné:
 @appcelery.task
@@ -91,10 +92,12 @@ def saveMetadataAsJSON(pictureID, metadata, folder):
 
     return status
 
-#fonction d'extraction d'un thumbnail depuis l'image originale vers le dossier thumbnails
+
+# fonction d'extraction d'un thumbnail depuis l'image originale vers le dossier thumbnails
 @appcelery.task
-def extractThumbnail(picturename, pictureformat, picture_folder = Path('pictures'), thumbnail_folder = Path('thumbnails'), size = (75, 75)):
-    #ouverture de l'image "picturename", depuis le dossier picture_folder
+def extractThumbnail(picturename, pictureformat, picture_folder=Path('pictures'), thumbnail_folder=Path('thumbnails'),
+                     size=(75, 75)):
+    # ouverture de l'image "picturename", depuis le dossier picture_folder
     with img.open(picture_folder / Path(picturename + '.' + pictureformat)) as picture:
         # passage de l'image en taille thumbnail
         picture.thumbnail(size)
@@ -120,12 +123,13 @@ def convertvalue(value):
     # entiers, décimaux et chaînes de caractères sont possibles. 
     # Retourne None s'il n'est pas possible de convertir en "string" :
     possibleFormats = [int, float, str]
-    for f in possibleFormats :
+    for f in possibleFormats:
         try:
             return f(value)
         except:
             pass
     return None
+
 
 # fonction de nettoyage des fichiers temporaires
 def remove_temp_data(temporary_files_folder, pictureID):
@@ -133,4 +137,3 @@ def remove_temp_data(temporary_files_folder, pictureID):
         remove(str(temporary_files_folder / Path(pictureID)))
     except:
         pass
-

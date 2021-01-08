@@ -1,13 +1,17 @@
 # SIO_Python_HLAMY
 
+
 #### Description ####
 
 Ceci est une application écrite dans le cadre du mastère SIO 2021 de CentraleSupélec, par l'élève Hugues LAMY.
 Elle permet de générer un thumbnail et d'extraire des métadonnées à partir d'une image fourni par l'utilisateur, via des API de type REST.
 
+
 #### Installation ####
 
-Python 3.8, puis les librairies flask, pillow, celery et pathlib doivent en premier lieu être installées.
+Cet outil de génération de thumbnail a été developpé sous windows et testé avec la distribution "DEBIAN" de GNU/LINUX (système recommandé).
+
+Python 3.8, puis les librairies flask, pillow, celery et pathlib doivent être installées.
 
 # python : python 3.8
 
@@ -23,25 +27,28 @@ installation via $ pip install celery
 # pathlib library, 1.0.1
 installation via $ pip install pathlib
 
-Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi par l'utilisateur pour faire fonctionner l'application. En pratique, les fichiers "launcher.py", "hlamy_main.py", et "pichandler.py" sont nécessaires à minima pour faire fonctionner l'application. 
+Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi par l'utilisateur pour faire fonctionner l'application. En pratique, seulement les fichiers "launcher.py", "hlamy_main.py", et "pichandler.py" sont nécessaires à minima pour faire fonctionner l'application. 
 
 Le lancement de celle-ci verra la création, s'il n'existent pas déjà, des dossiers /metadata, /pictures, /temp et /thumbnail. Ceux-ci contiendront les fichiers nécessaires à l'application.
 
+
 ### Tests ####
 
-Les fichiers restants sont eux indispensables pour réaliser les tests de fonctionnement : test_pichandler.py réalise les tests sur les fonctions de pichandler.py pendant que test_hlamy_main teste lui l'application web. Le dossier tests et ses sous-dossiers contiennent des
+Les fichiers restants sont eux indispensables pour réaliser les tests de fonctionnement : test_pichandler.py réalise les tests sur les fonctions de pichandler.py alors que test_hlamy_main teste lui l'application web. Le dossier tests et ses sous-dossiers contiennent des données controlées destinées à vérifier le bon retour de l'application lors de l'envoi de ces documents.
+
 
 ### Mise en route de l'application ###
 
 L'application peut être lancée via l'execution du script "laucher.py". Aucune autre action n'est nécessaire, mais l'utilisateur doit avoir les droits suffisants pour que le script puisse executer/lire et écrire dans son dossier courant.
 
-Ce script lancera un serveur flask accessible en local sur le port 5000, c'est à dire sur http://localhost:5000/. 
+Ce script lancera un serveur flask accessible sur le port 5000, c'est à dire par exemple sur http://localhost:5000/ (ou l'adresse IP de la machine serveur suivi de :5000). 
 
-Le bon accès a la page racine http://localhost:5000/ confirme 
+Le bon accès a la page racine http://localhost:5000/ confirme le bon fonctionnement de l'application et donne les informations sur l'API.
+
 
 #### Les contrats API : ####
 
-/images/ + requete POST : permet d'envoyer une image sur le serveur. Les formats TIFF, BMP, PNG, JPG, JPEG et TGA sont supportés.
+/images/ + requete POST : permet d'envoyer une image sur le serveur. Les formats TIFF, BMP, PNG, JPG, JPEG et TGA sont supportés. un pictureID à 7 chiffres (compris entre 1000000 et 9999999) est renvoyé par l'application.
 
 / + requête GET : racine, indique si le serveur tourne. Fourni aussi des indications concernant les contrats API.
 
@@ -67,6 +74,8 @@ curl --output <pictureID>.jpg http://127.0.0.1:5000/thumbnails/<pictureID>.jpg
 
 
 #### limitations : ####
+
 - Les fichiers "texture" ne sont pas pris en compte, ce ne sont pas des formats d'image ;
 - Les fichiers "logiciel de retouche" ne sont pas pris en compte, ce ne sont pas des formats d'image ;
-- Les fichiers '.gif' ne sont pas compatible ;
+- Les fichiers '.gif' ne sont pas compatible avec l'application ;
+- un maximum de 9 millions de fichiers sont envoyables sur l'application (ceci pour rester raisonnable : il est possible d'augmenter cette taille dans le programme si cela est désiré, mais hors des enjeux d'une application scolaire).
