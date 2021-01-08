@@ -6,6 +6,7 @@
 Ceci est une application écrite dans le cadre du mastère SIO 2021 de CentraleSupélec, par l'élève Hugues LAMY.
 Elle permet de générer un thumbnail et d'extraire des métadonnées à partir d'une image fourni par l'utilisateur, via des API de type REST.
 
+Le développement a été effectué avec VS Code.
 
 #### Installation ####
 
@@ -31,6 +32,7 @@ Ensuite, le contenu du fichier zippé doit être dézippé dans le répertoire choisi
 
 Le lancement de celle-ci verra la création, s'il n'existent pas déjà, des dossiers /metadata, /pictures, /temp et /thumbnail. Ceux-ci contiendront les fichiers nécessaires à l'application.
 
+L'environnement virtuel est présent dans le dossier /venv au besoin.
 
 ### Tests ####
 
